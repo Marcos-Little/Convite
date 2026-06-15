@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Um convite especial 💌</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { box-sizing: border-box; }
 
@@ -486,6 +487,10 @@
 </div>
 
 <script>
+  // Configuração do Supabase
+  const SUPABASE_URL = 'https://buzqbvbuveicxefvdkqg.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_uzT-VFnMPLQ1Adl7ZeX3BA_dGILrTeF';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   // Floating hearts background
   const heartBg = document.getElementById('heartBg');
   const heartCount = 30;
@@ -586,7 +591,7 @@
   setupOptions('foodOptions', 'btnStep2', 'food');
   setupOptions('placeOptions', 'btnStep3', 'place');
 
-  function finishInvite() {
+  async function finishInvite() {
     data.message = document.getElementById('msgInput').value.trim();
 
     const dateObj = new Date(data.date + 'T00:00:00');
@@ -597,6 +602,25 @@
     document.getElementById('outFood').textContent = data.food;
     document.getElementById('outPlace').textContent = data.place;
     document.getElementById('outMsg').textContent = data.message ? '"' + data.message + '"' : '';
+
+    // Salva a resposta no Supabase
+    try {
+      const { error } = await supabaseClient
+        .from('encontros')
+        .insert([{
+          date: data.date,
+          time: data.time,
+          food: data.food,
+          place: data.place,
+          message: data.message || null
+        }]);
+
+      if (error) {
+        console.error('Erro ao salvar no Supabase:', error);
+      }
+    } catch (err) {
+      console.error('Erro inesperado ao salvar:', err);
+    }
 
     showStep(5);
   }
